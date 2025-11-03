@@ -7,6 +7,8 @@ import { MyDete } from "../controllers/deleteController.js";
 import { updateRecord } from "../controllers/updateController.js";
 
 
+
+
 import express from "express";
 const adminRoute = express.Router();
 adminRoute.get("/admin/dashboard", verifyToken, isAdmin, dashboard);
