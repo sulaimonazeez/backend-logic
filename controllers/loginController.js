@@ -16,6 +16,7 @@ export const userLogin = async (req, res) => {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
+    // Create payload
     const payload = {
       id: user._id,
       email: user.email,
@@ -24,14 +25,23 @@ export const userLogin = async (req, res) => {
       country: user.country,
       role: user.role
     };
+
+    // Create JWT token
     const token = jwt.sign(payload, process.env.JWT_SECRET, {
-      expiresIn: process.env.JWT_EXPIRES_IN || 3600,
+      expiresIn: process.env.JWT_EXPIRES_IN || "1h",
     });
 
+    // Set token as HTTP-only cookie
+    res.cookie("access_token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production", // true in prod
+      sameSite: "lax", // protects against CSRF
+      maxAge: 1000 * 60 * 60 // 1 hour
+    });
+
+    // Return minimal user info (no token in JSON)
     res.status(200).json({
       message: "Login successful",
-      token,
-      expires_in:3600,
       user: {
         id: user._id,
         fullname: user.fullname,

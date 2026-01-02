@@ -4,6 +4,7 @@ import connectDb from "./config/db.js";
 import userRoutes from "./routes/userRouter.js";
 import adminRoute from "./routes/adminRoute.js";
 import router from "./routes/authRouter.js";
+import cookieParser from "cookie-parser";
 import User from "./models/User.js";
 import morgan from "morgan";
 import cors from "cors";
@@ -13,7 +14,13 @@ app.use(express.json());
 dotenv.config();
 connectDb()
 
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    credentials: true,
+  })
+);
+app.use(cookieParser());
 app.use(morgan('dev'));
 app.use("/api", userRoutes);
 app.use("/auth", router);
