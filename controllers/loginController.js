@@ -35,7 +35,7 @@ export const userLogin = async (req, res) => {
     res.cookie("access_token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production", // true in prod
-      sameSite: "lax", // protects against CSRF
+      sameSite: "none", // protects against CSRF
       maxAge: 1000 * 60 * 60 // 1 hour
     });
 
