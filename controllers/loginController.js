@@ -6,41 +6,46 @@ export const userLogin = async (req, res) => {
   const { email, password } = req.body;
 
   try {
+    // 🔍 Find user
     const user = await createUser.findOne({ email });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
+    // 🔐 Check password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    // Create payload
+    // 📦 Create payload
     const payload = {
       id: user._id,
       email: user.email,
       fullname: user.fullname,
       phone: user.phone,
       country: user.country,
-      role: user.role
+      role: user.role,
     };
 
-    // Create JWT token
+    // 🔑 Create token
     const token = jwt.sign(payload, process.env.JWT_SECRET, {
       expiresIn: process.env.JWT_EXPIRES_IN || "1h",
     });
 
-    // Set token as HTTP-only cookie
+    // 🌍 Detect environment
+    const isProduction = process.env.NODE_ENV === "production";
+
+    // 🍪 Set cookie (FIXED)
     res.cookie("access_token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production", // true in prod
-      sameSite: "none", // protects against CSRF
-      maxAge: 1000 * 60 * 60 // 1 hour
+      secure: isProduction,                  // true ONLY in production
+      sameSite: isProduction ? "none" : "lax", // 🔥 FIX HERE
+      maxAge: 1000 * 60 * 60,                // 1 hour
     });
 
-    // Return minimal user info (no token in JSON)
-    res.status(200).json({
+    // ✅ Response
+    return res.status(200).json({
       message: "Login successful",
       user: {
         id: user._id,
@@ -48,12 +53,15 @@ export const userLogin = async (req, res) => {
         email: user.email,
         phone: user.phone,
         country: user.country,
-        role: user.role
+        role: user.role,
       },
     });
 
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: err.message });
+    console.error("Login error:", err);
+    return res.status(500).json({
+      message: "Something went wrong",
+      error: err.message,
+    });
   }
 };

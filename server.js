@@ -1,31 +1,31 @@
-import express from "express";
 import dotenv from "dotenv";
+dotenv.config({
+  path: `.env.${process.env.NODE_ENV}`
+});
+import express from "express";
 import connectDb from "./config/db.js";
 import userRoutes from "./routes/userRouter.js";
 import adminRoute from "./routes/adminRoute.js";
 import router from "./routes/authRouter.js";
 import cookieParser from "cookie-parser";
-import User from "./models/User.js";
 import morgan from "morgan";
 import cors from "cors";
 
 const app = express();
-app.use(express.json());
-dotenv.config();
 connectDb()
+app.use(cors({
+  origin: process.env.CLIENT_URL, // 👈 exact frontend URL
+  credentials: true,
+}));
 
-app.use(
-  cors({
-    origin: true,
-    credentials: true,
-  })
-);
+app.use(express.json());
 app.use(cookieParser());
-app.use(morgan('dev'));
+app.use(morgan("dev"));
+
 app.use("/api", userRoutes);
 app.use("/auth", router);
 app.use(adminRoute);
-
-app.listen(8000, ()=>{
+console.log(process.env.CLIENT_URL)
+app.listen(8000, () => {
   console.log("Server is running...");
-})
+});

@@ -3,18 +3,13 @@ import CoinDeposit from "../models/Coin.js";
 
 export const dashboard = async (req, res) => {
   try {
-    // Count total users
     const totalUsers = await User.countDocuments();
-
-    // Count total deposits
     const totalDeposits = await Coin.countDocuments();
 
-    // Sum all deposit amounts
     const totalAmount = await Coin.aggregate([
       { $group: { _id: null, total: { $sum: "$amount" } } }
     ]);
 
-    // Format the result
     const dashboardData = {
       totalUsers,
       totalDeposits,
