@@ -14,9 +14,15 @@ import cors from "cors";
 const app = express();
 connectDb()
 app.use(cors({
-  origin: process.env.CLIENT_URL, // 👈 exact frontend URL
+  origin: process.env.CLIENT_URL,
   credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
 }));
+
+app.use((req, res, next) => {
+  console.log("Request Origin:", req.headers.origin);
+  next();
+});
 
 app.use(express.json());
 app.use(cookieParser());
