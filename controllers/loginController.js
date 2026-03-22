@@ -1,24 +1,25 @@
-import createUser from "../models/User.js";
+import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
 export const userLogin = async (req, res) => {
   const { email, password } = req.body;
 
+  if (!email || !password) {
+    return res.status(400).json({ message: "Email and password are required" });
+  }
+
   try {
-    // 🔍 Find user
-    const user = await createUser.findOne({ email });
+    const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // 🔐 Check password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    // 📦 Create payload
     const payload = {
       id: user._id,
       email: user.email,
@@ -28,23 +29,19 @@ export const userLogin = async (req, res) => {
       role: user.role,
     };
 
-    // 🔑 Create token
     const token = jwt.sign(payload, process.env.JWT_SECRET, {
-      expiresIn: process.env.JWT_EXPIRES_IN || "1h",
+      expiresIn: process.env.JWT_EXPIRES_IN || "24h",
     });
 
-    // 🌍 Detect environment
     const isProduction = process.env.NODE_ENV === "production";
 
-    // 🍪 Set cookie (FIXED)
     res.cookie("access_token", token, {
       httpOnly: true,
-      secure: isProduction,                  // true ONLY in production
-      sameSite: isProduction ? "none" : "lax", // 🔥 FIX HERE
-      maxAge: 1000 * 60 * 60,                // 1 hour
+      secure: isProduction,
+      sameSite: isProduction ? "none" : "lax", // ✅ "none" only works with secure:true on HTTPS
+      maxAge: 1000 * 60 * 60 * 24, // 24 hours
     });
 
-    // ✅ Response
     return res.status(200).json({
       message: "Login successful",
       user: {
@@ -56,12 +53,8 @@ export const userLogin = async (req, res) => {
         role: user.role,
       },
     });
-
   } catch (err) {
     console.error("Login error:", err);
-    return res.status(500).json({
-      message: "Something went wrong",
-      error: err.message,
-    });
+    return res.status(500).json({ message: "Something went wrong" });
   }
 };

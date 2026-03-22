@@ -1,14 +1,17 @@
 import { getRegisteredModels } from "../admin/adminRegistry.js";
 
-
-export const GetModel = async (req, res) =>{
+export const GetModel = async (req, res) => {
   const { modelName } = req.params;
   const models = getRegisteredModels();
-  const model = models[modelName];
+  const Model = models[modelName];
 
-  if (!model) return res.status(404).json({ message: "Model not found" });
+  if (!Model) return res.status(404).json({ message: "Model not found" });
 
-  const data = await model.find();
-  console.log(data);
-  res.json(data);
-}
+  try {
+    const data = await Model.find().lean();
+    res.json(data);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};

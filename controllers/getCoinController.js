@@ -1,12 +1,14 @@
-import CoinType from "../models/Coin.js";
+import CoinDeposit from "../models/Coin.js";
 
-export const getCoin = async (req, res) =>{
+export const getCoin = async (req, res) => {
   try {
-    const transaction = await CoinType.find({user:req.user.id}).sort({ date:-1 });
-    res.status(200).json(transaction);
+    const transactions = await CoinDeposit.find({ user: req.user.id })
+      .sort({ date: -1 })
+      .lean(); // ✅ .lean() returns plain JS objects — faster for read-only queries
+
+    res.status(200).json(transactions);
   } catch (err) {
     console.error(err);
-    res.status(500).json({message:"Something went wrong"})
+    res.status(500).json({ message: "Something went wrong" });
   }
-  
-}
+};

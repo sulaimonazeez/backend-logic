@@ -1,18 +1,24 @@
 import CoinDeposit from "../models/Coin.js";
 
 export const depositCoin = async (req, res) => {
-  const { amount, coinType } = req.body
-  if (!coinType || !amount){
-    console.error('No Data Provided');
-    res.status(404).json({message:"No Data Provuded"})
+  const { amount, coinType } = req.body;
+
+  if (!coinType || !amount) {
+    return res.status(400).json({ message: "Amount and coinType are required" });
   }
+
+  if (amount <= 0) {
+    return res.status(400).json({ message: "Amount must be greater than zero" });
+  }
+
   try {
-    const newCoin = await CoinDeposit.create({
+    const newDeposit = await CoinDeposit.create({
       user: req.user.id,
-      amount: amount,
-      coinType: coinType
+      amount: Number(amount),
+      coinType,
     });
-    res.json(newCoin);
+
+    res.status(201).json(newDeposit);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message });

@@ -3,21 +3,18 @@ import CoinDeposit from "../models/Coin.js";
 
 export const dashboard = async (req, res) => {
   try {
-    const totalUsers = await User.countDocuments();
-    const totalDeposits = await Coin.countDocuments();
+    const [totalUsers, totalDeposits, totalAmountResult] = await Promise.all([
+      User.countDocuments(),
+      CoinDeposit.countDocuments(),
+      CoinDeposit.aggregate([{ $group: { _id: null, total: { $sum: "$amount" } } }]),
+    ]); // ✅ Run all 3 queries in parallel — was sequential before
 
-    const totalAmount = await Coin.aggregate([
-      { $group: { _id: null, total: { $sum: "$amount" } } }
-    ]);
-
-    const dashboardData = {
+    res.status(200).json({
       totalUsers,
       totalDeposits,
-      totalAmount: totalAmount[0]?.total || 0,
-      message: "Admin dashboard data loaded successfully"
-    };
-
-    res.status(200).json(dashboardData);
+      totalAmount: totalAmountResult[0]?.total || 0,
+      message: "Admin dashboard loaded successfully",
+    });
   } catch (error) {
     console.error("Dashboard Error:", error);
     res.status(500).json({ message: "Server error" });
