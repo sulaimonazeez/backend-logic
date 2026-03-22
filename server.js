@@ -14,7 +14,7 @@ import cors from "cors";
 const app = express();
 connectDb()
 app.use(cors({
-  origin: process.env.CLIENT_URL,
+  origin: "https://xentrovest.vercel.app",
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
 }));
