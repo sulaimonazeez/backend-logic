@@ -1,3 +1,4 @@
+// adminRegistry.js
 const registeredModels = {};
 
 export const registerModel = (name, model) => {

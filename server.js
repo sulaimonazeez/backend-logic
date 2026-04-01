@@ -1,6 +1,5 @@
 import dotenv from "dotenv";
 dotenv.config(); // ✅ Must be first before any other imports
-
 import express from "express";
 import connectDb from "./config/db.js";
 import userRoutes from "./routes/userRouter.js";
@@ -33,6 +32,7 @@ app.use("/auth", authRouter);
 app.use(adminRoute);
 
 connectDb(); // ✅ After middleware is registered
+
 
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => {
