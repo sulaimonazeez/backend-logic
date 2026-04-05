@@ -1,7 +1,10 @@
 import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
 
+
+dotenv.config();
 export const userLogin = async (req, res) => {
   const { email, password } = req.body;
 
@@ -30,20 +33,21 @@ export const userLogin = async (req, res) => {
     };
 
     const token = jwt.sign(payload, process.env.JWT_SECRET, {
-      expiresIn: process.env.JWT_EXPIRES_IN || "24h",
+      expiresIn: "7d",
     });
 
-    const isProduction = process.env.NODE_ENV === "production";
+    //const isProduction = process.env.NODE_ENV === "production";
 
     res.cookie("access_token", token, {
       httpOnly: true,
-      secure: isProduction,
-      sameSite: isProduction ? "none" : "lax", // ✅ "none" only works with secure:true on HTTPS
-      maxAge: 1000 * 60 * 60 * 24, // 24 hours
+      secure: true,
+      sameSite: "none",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
     return res.status(200).json({
       message: "Login successful",
+      token,
       user: {
         id: user._id,
         fullname: user.fullname,
